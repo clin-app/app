@@ -75,12 +75,14 @@ MAX_LEVEL = 10
 # Da 1 a 4 parole con iniziale maiuscola (nomi propri), anche con particelle
 # tipo "De", "Di", "D'". `_CAP_NAME_CS` forza la sensibilita' alle maiuscole
 # anche dentro un pattern con (?i).
-_UP = "A-ZÀ-ÖØ-ÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽȘȚ"
-_LETTER = "A-Za-zÀ-ÖØ-öø-ɏȘșȚțḀ-ỿ"
-_CAP_WORD = r"[" + _UP + r"][" + _LETTER + r"'’]+"
+_UP = "A-ZÀ-ÖØ-ÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽȘȚЀ-ЯѢѲѴҐΆΈ-ΏΑ-Ϋ"  # anche cirillico e greco
+_LETTER = "A-Za-zÀ-ÖØ-öø-ɏȘșȚțḀ-ỿͰ-ϿЀ-ӿ"
+# anche "Popov-Petrov" e le iniziali mutate irlandesi e gaeliche ("Ó hAodha", "Mac an t-Saoir")
+_CAP_WORD = (r"(?:(?:h|n|t|bh|mb|gc|nd|ng|bp|dt)-?(?=[" + _UP + r"]))?[" + _UP + r"][" + _LETTER + r"'’]+"
+             r"(?:-[" + _UP + r"][" + _LETTER + r"'’]+)?")
 # particelle dei cognomi ("Lo Iacono", "De Luca", "Dela Cruz", "El Amrani", "van der Berg")
 _PARTICLE = (r"(?:[Dd][aeiu]|[Dd]e[ilns]|[Dd]ell[ao']|[Dd]ela|[Ll][aeio]|[Vv][ao]n|[Dd]e[rn]|[Tt]e[rn]|[Zz]u|[Ee]l|[Aa]l|"
-             r"[Bb]in|[Bb]en|[Dd]os|[Dd]as|[Dd]o|[Yy]|[Ee])")
+             r"[Bb]in|[Bb]en|[Dd]os|[Dd]as|[Dd]o|[Yy]|[Ee]|i|Ó|Ní|Nic|Uí|Mac|Mc|[Aa]n|[Ff]itz)")  # catalano "i", irlandese
 _CAP_NAME = _CAP_WORD + r"(?:[ \t]+(?:" + _PARTICLE + r"[ \t]+){0,2}" + _CAP_WORD + r"){0,3}"
 _CAP_NAME_CS = r"(?-i:" + _CAP_NAME + r")"
 
@@ -174,8 +176,8 @@ PERSON_CONTEXT_PATTERNS = [
 
 # 3. Date di nascita e dati anagrafici
 DOB_PATTERNS = [
-    r'(?i)\b(?:Data\s*(?:di)?\s*Nascita|Data\s*Nasc\.?|D\.?N\.?|Nascita|Luogo\s*e\s*Data\s*di\s*Nascita|Date\s*of\s*Birth|DOB|D\.O\.B\.?|Birth\s*Date|Date\s*de\s*naissance|Fecha\s*de\s*nacimiento|Geburtsdatum|Geb\.-?Datum|Data\s*de\s*nascimento|Geboortedatum|Data\s*urodzenia|Data\s*na[șs]terii)[:\s]+(?P<v>[^\n\r,;\t]{2,})',
-    r'(?i)\b(?:Nato\/a|Nato|Nata|Né\(e\)|Né|Née|Nacido\/a|Nacida|Nacido|Geboren|geb\.|Born|Nascid[oa]|Geboren\s*op|Urodzon[ya]|N[ăa]scut[ăa]?)(?:\s*il|\s*le|\s*el|\s*am|\s*on|\s*em|\s*a|\s*la|\s*dnia)?[:\s]+(?P<v>[^\n\r,;\t]{2,})',
+    r'(?i)\b(?:Data\s*(?:di)?\s*Nascita|Data\s*Nasc\.?|D\.?N\.?|Nascita|Luogo\s*e\s*Data\s*di\s*Nascita|Date\s*of\s*Birth|DOB|D\.O\.B\.?|Birth\s*Date|Date\s*de\s*naissance|Fecha\s*de\s*nacimiento|Geburtsdatum|Geb\.-?Datum|Data\s*de\s*nascimento|Geboortedatum|Data\s*urodzenia|Data\s*na[șs]terii)[:\s]+(?P<v>[^\n\r,;\t|—()\[\]]{2,40}?)(?=\s*(?:[|—()\[\],;\n]|\.(?:\s|$)|\s\s|$))',
+    r'(?i)\b(?:Nato\/a|Nato|Nata|Né\(e\)|Né|Née|Nacido\/a|Nacida|Nacido|Geboren|geb\.|Born|Nascid[oa]|Geboren\s*op|Urodzon[ya]|N[ăa]scut[ăa]?)(?:\s*il|\s*le|\s*el|\s*am|\s*on|\s*em|\s*a|\s*la|\s*dnia)?[:\s]+(?P<v>[^\n\r,;\t|—()\[\]]{2,40}?)(?=\s*(?:[|—()\[\],;\n]|\.(?:\s|$)|\s\s|$))',
     r'(?i)\b(?:Et[àa]|Age|Anni)[:\s]+(?P<v>\d{1,3}(?![.,]\d)\s*(?:anni|aa|mesi|y|yrs)?)\b',
     # eta' in prosa ("di 45 anni", "di 5 mesi"); le durate ("da 3 giorni") restano visibili
     r'(?i)\bdi\s+(?P<v>\d{1,3}\s+(?:anni|mesi))\b(?!\s+(?:di|da|fa|prima|dopo|dal|dalla|dall)\b|\s+(?:terapia|trattamento|follow|distanza|durata))',
@@ -418,6 +420,65 @@ def excluded_categories() -> frozenset:
     except Exception:
         return frozenset()
     return _excl_cache["value"]  # type: ignore[return-value]
+
+
+# --------------------------------------------------------------------------
+# Regole costruite sui vocaboli di 40 lingue europee (clin_lingue.py)
+# --------------------------------------------------------------------------
+def _alt(words, cs=False):
+    """Alternativa regex di parole (dalla piu' lunga), con confini di parola Unicode."""
+    ws = sorted({w.strip() for w in words if w and w.strip()}, key=len, reverse=True)
+    body = "|".join(re.escape(w).replace(r"\ ", r"\s+") for w in ws)
+    return (r"(?-i:(?:" + body + r"))") if cs else (r"(?i:(?:" + body + r"))")
+
+
+def _multilingual_rules() -> None:
+    try:
+        from clin_lingue import LINGUE
+    except ImportError:  # pragma: no cover - modulo facoltativo
+        return
+    get = lambda key: [w for d in LINGUE.values() for w in d.get(key, [])]
+    months = _alt(get("mesi"))
+    name = r"(?-i:" + _CAP_NAME + r")"
+    # nome dopo un'etichetta con i due punti: anche tutto maiuscolo, "COGNOME, Nome" o in minuscolo
+    any_name = (r"(?P<v>[" + _LETTER + r"][" + _LETTER + r"'’\-]+(?:,?[ \t]+(?:" + _PARTICLE + r"[ \t]+){0,2}"
+                r"[" + _LETTER + r"][" + _LETTER + r"'’\-]+){0,3})")
+    DATE_PATTERNS.extend([
+        r'(?<![\w])\d{1,2}\.?\s+(?:de\s+|d[\'’]\s*|of\s+)?' + months + r'\s+(?:de\s+)?(?:19|20)\d{2}(?:\s*(?:г\.|р\.|m\.|\.))?',
+        r'(?<![\w])(?:19|20)\d{2}\.?\s+(?:m\.\s+|gada\s+)?(?:\d{1,2}\.\s+)?' + months + r'(?:\s+\d{1,2}\.?(?:\s*d\.)?)?',
+        # basco: il mese si declina ("martxoak", "martxoaren"): si cerca la radice
+        r'(?<![\w])(?:19|20)\d{2}(?:ko|\.)?\s+' + _alt([m[:-2] if m.endswith("ak") else m.rstrip("k")
+                                                         for m in LINGUE.get("eu", {}).get("mesi", [])]) + r'\w{0,5}\s+\d{1,2}',
+    ])
+    DOCTOR_PATTERNS.append(r'(?<![\w.])(?<!\d\s)' + _alt(get("titoli_medico"), cs=True) + r'\s+(?P<v>' + name + r')')
+    PATIENT_LABEL_PATTERNS.extend([
+        r'(?<![\w])' + _alt(get("etichette_paziente")) + r'(?:\s*/\s*\w{1,4})?\s*:\s*(?:' + _alt(get("titoli_paziente"), cs=True) + r'\s+)?' + any_name,
+        # mai dopo un numero: "1 g. Hb" e' un dosaggio, non "signor Hb"
+        r'(?<![\w.])(?<!\d\s)' + _alt(get("titoli_paziente"), cs=True) + r'\s+(?P<v>' + name + r')',
+    ])
+    DOB_PATTERNS.append(r'(?<![\w])' + _alt(get("etichette_nascita")) + r'\s*[:]?\s*(?P<v>\d{1,4}[./\-]\d{1,2}[./\-]\d{2,4}|\d{1,2}\.?\s+\S+\s+\d{4})')
+    # contatti: "Contatto (figlio/a): Nome", "Persona de contacto (cónyuge): Nombre", "(tutore legale): Nome"
+    rel = _alt(get("parentela") + get("contatto"))
+    PERSON_CONTEXT_PATTERNS.extend([
+        r'(?<![\w])' + _alt(get("contatto")) + r'[^\n:()]{0,25}\([^)\n]{1,40}\)\s*:\s*' + any_name,
+        r'\(\s*' + rel + r'\s*\)\s*:\s*' + any_name,
+        r'(?<![\w])(?i:CC|Cc|c\.c\.)\s*:\s*(?P<v>' + name + r')',
+    ])
+
+
+_multilingual_rules()
+
+# Identificativi in forma di codice: lettere, separatori e almeno 5 cifre di seguito
+# ("KH-23-869672-G", "SDO/2023/176329", "N.2023/298603-A", "NOS24/531196", "MRN-2023-90385A").
+# I codici ICD ("C18.9", "G20") e i dosaggi non hanno 5 cifre consecutive.
+RECORD_PATTERNS.append(
+    r'(?<![\w./\-])[A-Z]{1,5}(?:[.\-/]|(?=\d))(?:\d{2,4}[.\-/])?\d{5,8}[A-Z]?(?:[.\-/][A-Z0-9]{1,2})?(?![\w/])'
+)
+# "COGNOME, Nome": cognome tutto maiuscolo, virgola, nome con l'iniziale maiuscola
+_ACRONYMS = r"(?!(?:ECG|EKG|TAC|TC|RM|RMN|MRI|CT|NYHA|BMI|BPCO|COPD|HIV|HCV|HBV|PCR|VES|INR|ICD|DRG|ASA|PA|FC|SAT|EGA|ECO|RX|ICU|PS|UO|UOC|SOR|OR|ER|AIDS|COVID)\b)"
+PATIENT_LABEL_PATTERNS.append(
+    r'(?<![\w])(?P<v>' + _ACRONYMS + r'[' + _UP + r']{3,}(?:[ \-\'’][' + _UP + r']{2,}){0,2},[ \t]+[' + _UP + r'][' + _LETTER + r'\'’\-]+(?:[ \t]+[' + _UP + r'][' + _LETTER + r'\'’\-]+)?)'
+)
 
 
 _PATTERN_GROUPS: List[Tuple[str, List[str], int]] = [
@@ -1016,8 +1077,21 @@ _ROLE_WORDS = {"dirigente", "direttore", "direttrice", "responsabile", "primario
                "infettivologia", "diabetologia", "fisiatria", "riabilitazione", "endoscopia", "dialisi"}
 _TITLE_TOKENS = {"dott", "ssa", "dr", "prof", "sig", "ra", "na", "signor", "signora", "inf", "dottor", "dottoressa"}
 _NAME_TOKEN = re.compile(r"[" + _LETTER + r"'’]+")
-_NAME_PARTICLES = {"lo", "la", "li", "le", "de", "di", "da", "du", "del", "dei", "della", "dello", "dela",
-                   "van", "von", "der", "el", "al", "bin", "ben", "dos", "das"}
+_NAME_PARTICLES = {"lo", "la", "li", "le", "de", "di", "da", "du", "des", "del", "dei", "degli", "delle",
+                   "dello", "dell", "dela", "van", "von", "der", "den", "ter", "ten", "zu", "el", "al",
+                   "bin", "ben", "dos", "das", "do", "mac", "mc", "ó", "ní", "nic", "uí", "an", "fitz"}
+_WEAK_NAME_LABEL = re.compile(
+    r"(?i)^(?:cognome|surname|nom|apellido|nachname|nome|first\s+name|pr[ée]nom|nombre|vorname)$"
+)
+_APOS_PARTICLE = re.compile(r"^(?:(?i:d|l|dell)['’]|(?:h|n|t|bh|mb|gc|nd|ng|bp|dt)-?)(.+)$")
+
+
+def _is_cap_stem(tok: str) -> bool:
+    """Vero per 'Mario', 'd'Amico', 'dell'Oste', 'hAodha'."""
+    if tok[:1].isupper():
+        return True
+    m = _APOS_PARTICLE.match(tok)
+    return bool(m and m.group(1)[:1].isupper())
 
 
 def collect_names(text: str) -> List[str]:
@@ -1033,7 +1107,9 @@ def collect_names(text: str) -> List[str]:
         if kind == "PERSONA":
             found.append(value)
             # le particelle ("van", "der", "de") non sono parti del nome da cercare da sole
-            found.extend(t for t in value.split() if len(t) >= 3 and t.casefold() not in clin_llm._PARTICLES)
+            found.extend(t for t in value.split()
+                         if len(t) >= 3 and t.casefold() not in clin_llm._PARTICLES
+                         and t.lower().strip("'’") not in _NAME_PARTICLES)
     sources = [(rx, False) for rx in _NAME_SOURCES] + [(rx, True) for rx in _STRONG_NAME_SOURCES]
     for rx, strong in sources:
         for m in rx.finditer(text):
@@ -1044,31 +1120,45 @@ def collect_names(text: str) -> List[str]:
             value = text[v_start:v_end]
             # Etichette "deboli" (Nome, Cognome) in prosa: si accettano solo se
             # seguite da due punti o se il valore e' gia' formato da maiuscole.
+            raw_tokens = _NAME_TOKEN.findall(value)
             tokens: List[str] = []
-            for tok in _NAME_TOKEN.findall(value):
-                if not tokens and tok.lower() in _TITLE_TOKENS:
+            for idx, tok in enumerate(raw_tokens):
+                low = tok.lower().strip("'’")
+                if not tokens and low in _TITLE_TOKENS:
                     continue  # "Dott. Paolo Neri": il titolo non fa parte del nome
-                if tok.lower() in _NAME_PARTICLES and tok[0].isupper() and tokens:
-                    tokens.append(tok)  # "LO IACONO", "Dela Cruz"
-                    continue
-                if tok.lower().strip("'’") in _NAME_STOPWORDS or tok.lower() in _ROLE_WORDS:
+                if low in _NAME_PARTICLES:
+                    j = idx + 1
+                    while j < len(raw_tokens) and raw_tokens[j].lower().strip("'’") in _NAME_PARTICLES:
+                        j += 1
+                    nxt = raw_tokens[j] if j < len(raw_tokens) else ""
+                    nxt_low = nxt.lower().strip("'’")
+                    if nxt and _is_cap_stem(nxt) and nxt_low not in _NAME_STOPWORDS and nxt_low not in _ROLE_WORDS:
+                        tokens.append(tok)  # "Lo Iacono", "van der Berg", "de Luca"
+                        continue
+                if low in _NAME_STOPWORDS or low in _ROLE_WORDS:
                     break
-                if not tok[0].isupper():
+                if not _is_cap_stem(tok):
                     break
                 tokens.append(tok)
-                if len(tokens) == 4:
+                if len(tokens) == 6:
                     break
             if not tokens:
                 continue
-            if not strong and ":" not in label and not label.strip().lower().startswith(
-                ("sig", "mr", "mrs", "ms", "mme", "herr", "frau", "il ", "la ")
-            ) and not all(t.isupper() for t in tokens):
+            if (not strong and ":" not in label and _WEAK_NAME_LABEL.fullmatch(label.strip())
+                    and not all(t.isupper() or t.lower().strip("'’") in _NAME_PARTICLES for t in tokens)):
                 continue
             full = " ".join(tokens)
             if len(full) >= 3:
                 found.append(full)
+            # cognome composto con particella ("Marco de Luca" -> "de Luca", "Jan van der Berg" -> "van der Berg")
+            for idx, t in enumerate(tokens):
+                if t.lower().strip("'’") in _NAME_PARTICLES and idx + 1 < len(tokens):
+                    comp = " ".join(tokens[idx:])
+                    if len(comp) >= 3:
+                        found.append(comp)
+                    break
             for t in tokens:
-                if len(t) >= 3:
+                if len(t) >= 3 and t.lower().strip("'’") not in _NAME_PARTICLES:
                     found.append(t)
     # deduplica preservando l'ordine, piu' lunghi prima
     uniq = list(dict.fromkeys(found))
@@ -1110,13 +1200,19 @@ _SENTENCE_END = re.compile(r"(?<=[^\s.])\.(?=\s+[A-ZÀ-ÖØ-Þ])")
 def _trim_name_end(text: str, start: int, end: int) -> int:
     """Chiude il valore di un nominativo prima della prima parola-etichetta."""
     named = False
-    for m in _NAME_TOKEN.finditer(text, start, end):
+    tokens = list(_NAME_TOKEN.finditer(text, start, end))
+    for idx, m in enumerate(tokens):
         tok = m.group(0)
         low = tok.lower().strip("'’")
         if not named and low in _TITLE_TOKENS:
             continue  # "Dr. Ivan Petrov": il titolo precede il nome
-        if tok.lower() in _NAME_PARTICLES and tok[:1].isupper():
-            continue
+        if low in _NAME_PARTICLES:
+            j = idx + 1
+            while j < len(tokens) and tokens[j].group(0).lower().strip("'’") in _NAME_PARTICLES:
+                j += 1
+            nxt = tokens[j].group(0).lower().strip("'’") if j < len(tokens) else ""
+            if nxt and nxt not in _NAME_STOPWORDS and nxt not in _ROLE_WORDS:
+                continue
         if low in _NAME_STOPWORDS or low in _ROLE_WORDS:
             return len(text[:m.start()].rstrip(" \t,;-–")) if named else start
         named = True
@@ -1392,6 +1488,10 @@ def anonymize_document(
     input_path = Path(input_path)
     output_path = Path(output_path)
     result = FileResult(input_path=input_path, output_path=output_path)
+
+    if input_path.resolve() == output_path.resolve():
+        result.error = "Il file di output coincide con l'input."
+        return result
 
     doc = None
     try:
@@ -1751,17 +1851,26 @@ def process_batch_files(
             )
         else:
             # Import ritardato: il motore tabellare importa a sua volta da qui.
-            from tabular_engine import TABLE_SUFFIXES, anonymize_table
+            from tabular_engine import anonymize_table, is_table_file
 
-            if ext not in TABLE_SUFFIXES:
+            if is_table_file(src_path):
+                if table_settings is None:
+                    res = FileResult(input_path=src_path,
+                                     error="Impostazioni tabellari mancanti.")
+                else:
+                    res = anonymize_table(src_path, out_path, table_settings,
+                                          should_cancel=should_cancel)
+            elif ext in {".txt", ".md", ".docx"}:
+                from clin_text import anonymize_prose_document
+                reg = getattr(table_settings, "registry", None) if table_settings else None
+                res = anonymize_prose_document(
+                    src_path, out_path, sensitivity_level=sensitivity_level,
+                    explicit_targets=explicit_targets, whitelist_words=whitelist_words,
+                    registry=reg,
+                )
+            else:
                 res = FileResult(input_path=src_path,
                                  error=f"Formato non supportato: {ext}")
-            elif table_settings is None:
-                res = FileResult(input_path=src_path,
-                                 error="Impostazioni tabellari mancanti.")
-            else:
-                res = anonymize_table(src_path, out_path, table_settings,
-                                      should_cancel=should_cancel)
 
         if anonymize_filenames and res.ok and res.output_path and res.output_path.exists():
             clean = safe_output_stem(src_path.stem, sensitivity_level,
